@@ -7,7 +7,7 @@ Bem-vindo ao **TaskMaster Pro**, um organizador de tarefas desenvolvido com foco
 Acesse a versão moderna e responsiva diretamente do seu navegador (celular ou PC).
 **Funcionalidades:** Persistência de dados (não perde tarefas ao fechar), Modo Escuro, Design Glassmorphism.
 
-👉 **[CLIQUE AQUI PARA ACESSAR A AGENDA WEB]https://taskmasterpro-theta.vercel.app/**
+👉 **[CLIQUE AQUI PARA ACESSAR A AGENDA WEB](https://taskmasterpro-theta.vercel.app/)**
 
 ---
 
