@@ -21,7 +21,7 @@ int main() {
         tm.listTasks(false); // Pendentes
         tm.listTasks(true);  // Concluidas
 
-        std::cout << "\n=== ORGANIZA C++ ===\n";
+        std::cout << "\n=== TaskMaster Pro ===\n";
         std::cout << "1. Adicionar Tarefa\n";
         std::cout << "2. Concluir Tarefa\n";
         std::cout << "3. Remover Tarefa\n";
