@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster Pro Web</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #bb86fc;
+            --secondary: #03dac6;
+            --error: #cf6679;
+            --text: #e0e0e0;
+            --text-muted: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 { color: var(--primary); font-weight: 300; letter-spacing: 1px; }
+        
+        /* Input Area */
+        .input-group {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2c2c2c;
+            color: white;
+            outline: none;
+            min-width: 200px;
+        }
+
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            background: #2c2c2c;
+            color: white;
+            border: 1px solid #333;
+        }
+
+        button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-add { background-color: var(--primary); color: black; }
+        .btn-add:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .btn-sort {
+            background-color: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-sort:hover { background-color: rgba(3, 218, 198, 0.1); }
+
+        /* Task Lists */
+        .section-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        ul { list-style: none; }
+
+        .task-card {
+            background: var(--card-bg);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid transparent;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Cores baseadas na prioridade */
+        .prio-5 { border-left-color: #ff4444; } /* Urgente */
+        .prio-4 { border-left-color: #ff8800; }
+        .prio-3 { border-left-color: #ffbb33; }
+        .prio-2 { border-left-color: #00C851; }
+        .prio-1 { border-left-color: #33b5e5; } /* Baixa */
+
+        .task-info { display: flex; flex-direction: column; gap: 4px; }
+        .task-desc { font-size: 1.1rem; }
+        .task-meta { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .actions { display: flex; gap: 10px; }
+        
+        .btn-icon {
+            background: none;
+            padding: 8px;
+            font-size: 1.2rem;
+        }
+        .btn-check { color: var(--secondary); }
+        .btn-del { color: var(--error); }
+
+        .completed .task-desc { text-decoration: line-through; color: var(--text-muted); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .input-group { flex-direction: column; }
+            .btn-add { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>TASKMASTER PRO</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Sua agenda pessoal inteligente</p>
+    </header>
+
+    <div class="input-group">
+        <input type="text" id="descInput" placeholder="O que precisa ser feito?" onkeypress="handleEnter(event)">
+        <select id="prioInput">
+            <option value="5">🔥 5 - Crítica</option>
+            <option value="4">⚡ 4 - Alta</option>
+            <option value="3">⭐ 3 - Média</option>
+            <option value="2">☕ 2 - Normal</option>
+            <option value="1">🧊 1 - Baixa</option>
+        </select>
+        <button class="btn-add" onclick="addTask()">ADICIONAR</button>
+    </div>
+
+    <button class="btn-sort" onclick="sortTasks()">🔃 ORDENAR POR PRIORIDADE</button>
+
+    <div>
+        <div class="section-title">Pendentes</div>
+        <ul id="pendingList"></ul>
+    </div>
+
+    <div>
+        <div class="section-title">Concluídas</div>
+        <ul id="completedList"></ul>
+    </div>
+</div>
+
+<script>
+    // --- Lógica (Tradução do C++ para JS) ---
+    
+    // Carrega do armazenamento local ou inicia vazio
+    let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+
+    function saveLocal() {
+        localStorage.setItem('myTasks', JSON.stringify(tasks));
+        render();
+    }
+
+    function addTask() {
+        const desc = document.getElementById('descInput').value;
+        const prio = parseInt(document.getElementById('prioInput').value);
+
+        if (!desc.trim()) return alert("Digite uma descrição!");
+
+        const newTask = {
+            id: Date.now(), // Gera ID único baseado no tempo
+            description: desc,
+            priority: prio,
+            completed: false
+        };
+
+        tasks.push(newTask);
+        document.getElementById('descInput').value = '';
+        saveLocal();
+    }
+
+    function completeTask(id) {
+        // Busca Linear (find)
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.completed = !task.completed; // Toggle status
+            saveLocal();
+        }
+    }
+
+    function removeTask(id) {
+        // Filtro (Remove)
+        tasks = tasks.filter(t => t.id !== id);
+        saveLocal();
+    }
+
+    // Algoritmo de Ordenação (JS usa TimSort/QuickSort nativo otimizado)
+    function sortTasks() {
+        tasks.sort((a, b) => {
+            // Se a tarefa está concluída, joga pro final
+            if (a.completed !== b.completed) return a.completed - b.completed;
+            // Ordena por prioridade (Maior -> Menor)
+            return b.priority - a.priority;
+        });
+        saveLocal();
+    }
+
+    function handleEnter(e) {
+        if (e.key === 'Enter') addTask();
+    }
+
+    // Renderização (Atualiza o HTML)
+    function render() {
+        const pendingList = document.getElementById('pendingList');
+        const completedList = document.getElementById('completedList');
+        
+        pendingList.innerHTML = '';
+        completedList.innerHTML = '';
+
+        tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.className = `task-card prio-${task.priority} ${task.completed ? 'completed' : ''}`;
+            
+            li.innerHTML = `
+                <div class="task-info">
+                    <span class="task-desc">${task.description}</span>
+                    <span class="task-meta">Prioridade: ${task.priority}</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-icon btn-check" onclick="completeTask(${task.id})" title="Concluir/Retornar">
+                        ${task.completed ? '↩️' : '✅'}
+                    </button>
+                    <button class="btn-icon btn-del" onclick="removeTask(${task.id})" title="Remover">
+                        🗑️
+                    </button>
+                </div>
+            `;
+
+            if (task.completed) {
+                completedList.appendChild(li);
+            } else {
+                pendingList.appendChild(li);
+            }
+        });
+    }
+
+    // Inicializa
+    render();
+</script>
+
+</body>
+</html>
